@@ -1,0 +1,575 @@
+/* ============================================
+   PIXEL QUEST BEYOND WORLDS - Retro Style CSS
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+    --pixel-green: #00ff41;
+    --pixel-blue: #00d4ff;
+    --pixel-purple: #bf00ff;
+    --pixel-red: #ff0040;
+    --pixel-orange: #ff6b00;
+    --pixel-yellow: #ffff00;
+    --bg-dark: #0a0a0f;
+    --bg-mid: #1a1a2e;
+    --text-glow: rgba(0, 255, 65, 0.8);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg-dark);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    font-family: 'Press Start 2P', monospace;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Game Container - Centered Responsive Layout */
+#game-container {
+    position: relative;
+    background: var(--bg-mid);
+    border: 4px solid var(--pixel-green);
+    box-shadow: 
+        0 0 20px var(--text-glow),
+        inset 0 0 60px rgba(0, 255, 65, 0.1);
+    border-radius: 4px;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+#game-canvas {
+    display: block;
+    width: min(800px, 100vw);
+    height: auto;
+    aspect-ratio: 800 / 480;
+    background: #0d0d12;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* UI Overlay */
+#ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+}
+
+#health-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#health-label {
+    color: var(--pixel-red);
+    font-size: 10px;
+    text-shadow: 0 0 10px var(--pixel-red);
+}
+
+#health-bar-bg {
+    width: 120px;
+    height: 16px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--pixel-red);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+#health-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--pixel-red), var(--pixel-orange));
+    transition: width 0.2s ease;
+}
+
+#level-indicator {
+    color: var(--pixel-green);
+    font-size: 10px;
+    text-shadow: 0 0 10px var(--text-glow);
+}
+
+/* Skills */
+#skills-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.skill-slot {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.skill-label {
+    color: var(--pixel-blue);
+    font-size: 8px;
+    min-width: 12px;
+}
+
+.skill-cooldown-bg {
+    width: 36px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--pixel-blue);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.skill-cooldown-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--pixel-blue), var(--pixel-purple));
+    transition: width 0.1s linear;
+}
+
+/* Title Screen */
+#title-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(180deg, 
+        rgba(10, 10, 15, 0.95) 0%, 
+        rgba(26, 26, 46, 0.9) 50%,
+        rgba(10, 10, 15, 0.95) 100%);
+    z-index: 10;
+    overflow: hidden;
+}
+
+#title-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 255, 65, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(191, 0, 255, 0.08) 0%, transparent 60%);
+    animation: bg-float 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes bg-float {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+#title-screen h1,
+#title-screen p {
+    position: relative;
+    z-index: 1;
+}
+
+#game-title {
+    font-size: clamp(14px, 3vw, 24px);
+    color: var(--pixel-green);
+    text-align: center;
+    text-shadow: 0 0 20px var(--text-glow);
+    animation: title-glow 2s ease-in-out infinite alternate;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+#game-subtitle {
+    font-size: clamp(8px, 1.5vw, 12px);
+    color: var(--pixel-blue);
+    margin-bottom: 40px;
+    animation: subtitle-pulse 1.5s ease-in-out infinite;
+}
+
+#controls-hint {
+    font-size: clamp(6px, 1.2vw, 10px);
+    color: var(--pixel-blue);
+    margin-bottom: 15px;
+}
+
+#start-prompt {
+    font-size: clamp(8px, 1.5vw, 12px);
+    color: var(--pixel-yellow);
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes title-glow {
+    from { text-shadow: 0 0 20px var(--text-glow); }
+    to { text-shadow: 0 0 40px var(--text-glow), 0 0 60px var(--pixel-green); }
+}
+
+@keyframes subtitle-pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Level Complete Screen */
+#level-complete-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 15;
+}
+
+#level-complete-screen h2 {
+    color: var(--pixel-green);
+    font-size: clamp(14px, 2.5vw, 20px);
+    margin-bottom: 20px;
+}
+
+#level-complete-screen p {
+    color: var(--pixel-blue);
+    font-size: clamp(8px, 1.5vw, 12px);
+}
+
+/* Game Over Screen */
+#game-over-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 15;
+}
+
+#game-over-screen h2 {
+    color: var(--pixel-red);
+    font-size: clamp(14px, 2.5vw, 24px);
+    margin-bottom: 30px;
+}
+
+/* Ending Screen */
+#ending-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(180deg, 
+        rgba(10, 10, 15, 0.95) 0%, 
+        rgba(26, 26, 46, 0.9) 100%);
+    z-index: 15;
+}
+
+#ending-screen h2 {
+    color: var(--pixel-green);
+    font-size: clamp(14px, 2.5vw, 22px);
+    margin-bottom: 20px;
+    animation: title-glow 2s ease-in-out infinite alternate;
+}
+
+#ending-screen p {
+    color: var(--pixel-blue);
+    font-size: clamp(8px, 1.5vw, 12px);
+    margin-bottom: 30px;
+}
+
+/* Buttons - Retro Pixel Style */
+button {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    padding: 15px 25px;
+    background: var(--bg-dark);
+    color: var(--pixel-green);
+    border: 3px solid var(--pixel-green);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background: var(--pixel-green);
+    color: var(--bg-dark);
+    box-shadow: 0 0 20px var(--text-glow);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Pause Overlay */
+#pause-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 12;
+}
+
+#pause-overlay h2 {
+    color: var(--pixel-yellow);
+    font-size: clamp(14px, 2.5vw, 20px);
+    margin-bottom: 15px;
+}
+
+#pause-overlay p {
+    color: var(--pixel-blue);
+    font-size: 10px;
+}
+
+/* Utility */
+.hidden {
+    display: none !important;
+}
+
+/* Mobile / Desktop visibility - mobile-only hidden by default, shown on touch/narrow */
+.mobile-only { display: none; }
+@media (max-width: 768px), (hover: none) {
+    .desktop-only { display: none !important; }
+    .mobile-only { display: block !important; }
+}
+@media (min-width: 769px) and (hover: hover) {
+    .mobile-only { display: none !important; }
+}
+
+/* Mobile Touch Controls - Pixel design */
+#mobile-controls {
+    position: absolute;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    padding: 0 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+    z-index: 5;
+}
+
+#mobile-controls * {
+    pointer-events: auto;
+}
+
+/* Joystick - left side: dark green outer ring, neon green inner stick, 3D glow */
+#joystick-container {
+    flex-shrink: 0;
+    align-self: center;
+}
+
+#joystick-base {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #0a3d0a 0%, #062a06 50%, #051f05 100%);
+    border: 4px solid #00ff41;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.6),
+        0 0 16px rgba(0, 255, 65, 0.3),
+        inset 0 2px 4px rgba(0, 255, 65, 0.15),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    user-select: none;
+}
+
+#joystick-stick {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #00ff41 0%, #00cc33 50%, #009926 100%);
+    border: 2px solid rgba(0, 255, 65, 0.8);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.5),
+        0 0 12px rgba(0, 255, 65, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.05s ease-out;
+    pointer-events: none;
+}
+
+#joystick-base.active #joystick-stick {
+    background: linear-gradient(180deg, #00ff66 0%, #00ff41 50%, #00cc33 100%);
+    box-shadow: 0 0 18px rgba(0, 255, 65, 0.6);
+}
+
+/* Right side - button cluster */
+#mobile-buttons-right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+#mobile-buttons-top {
+    display: flex;
+    gap: 6px;
+}
+
+#mobile-buttons-bottom {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+}
+
+#mobile-buttons-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Pixel-art button base */
+.mobile-btn {
+    font-family: 'Press Start 2P', monospace;
+    border-radius: 0;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    image-rendering: pixelated;
+}
+
+/* Teal/cyan buttons (E, Jump, Attack) */
+.mobile-btn-teal {
+    background: #0d3d3d;
+    border: 3px solid #00d4ff;
+    color: #00d4ff;
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.3),
+        0 0 12px rgba(0, 212, 255, 0.2);
+}
+
+.mobile-btn-teal:active {
+    background: #00d4ff;
+    color: #0a0a0f;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Purple buttons (Q, R) */
+.mobile-btn-purple {
+    background: #2d0d3d;
+    border: 3px solid #ff00e5;
+    color: #ff00e5;
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.3),
+        0 0 12px rgba(255, 0, 229, 0.2);
+}
+
+.mobile-btn-purple:active {
+    background: #ff00e5;
+    color: #0a0a0f;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Small buttons */
+#mobile-buttons-top .mobile-btn,
+#mobile-buttons-left-col .mobile-btn {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 12px;
+    padding: 0;
+}
+
+/* Large Attack button (crossed swords) */
+.mobile-btn-attack {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    font-size: 22px;
+    padding: 0;
+}
+
+/* Prevent scroll/zoom on game area (mobile) */
+#game-container {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Fix canvas for mobile - ensure it fits viewport */
+@media (max-width: 768px), (hover: none) {
+    #game-container {
+        width: 100vw;
+        height: 100vh;
+        max-width: 100vw;
+        max-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #game-canvas {
+        width: 100vw !important;
+        height: auto !important;
+        max-height: calc(100vh - 160px);
+    }
+
+    #ui-overlay {
+        padding: 8px;
+    }
+
+    #health-bar-bg {
+        width: 80px;
+        height: 12px;
+    }
+
+    #health-label, #level-indicator {
+        font-size: 8px;
+    }
+
+    .skill-cooldown-bg {
+        width: 28px;
+        height: 8px;
+    }
+}
