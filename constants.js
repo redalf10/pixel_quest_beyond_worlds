@@ -33,4 +33,23 @@ export const POWER_SLASH_DAMAGE = 55;
 export const POWER_SLASH_DURATION = 20;
 export const POWER_SLASH_COOLDOWN = 150; // frames (~2.5s)
 
+// Bomb skill constants
+export const BOMB_COOLDOWN = 210;
+export const BOMB_FUSE_TIME = 140;
+export const BOMB_THROW_SPEED_X = 5.2;
+export const BOMB_THROW_SPEED_Y = -6.5;
+export const BOMB_EXPLOSION_RADIUS = 110;
+export const BOMB_DAMAGE = 90;
+export const BOMB_KNOCKBACK = 8;
+
+// Laser skill constants
+export const LASER_COOLDOWN = 160;
+export const LASER_DURATION = 14;
+export const LASER_RANGE = 330;
+export const LASER_DAMAGE = 65;
+export const LASER_THICKNESS = 24;
+export const LASER_BURN_TICKS = 3;
+export const LASER_BURN_DAMAGE = 6;
+
 export const HEAL_AMOUNT = 25;
+export const HEAL_DROP_CHANCE = 0.35;

@@ -104,6 +104,19 @@ body {
     text-shadow: 0 0 10px var(--text-glow);
 }
 
+#round-timer {
+    color: var(--pixel-yellow);
+    font-size: 10px;
+    text-shadow: 0 0 10px rgba(255, 255, 0, 0.65);
+    min-width: 56px;
+    text-align: center;
+}
+
+#round-timer.danger {
+    color: var(--pixel-red);
+    text-shadow: 0 0 12px rgba(255, 0, 64, 0.9);
+}
+
 /* Skills */
 #skills-container {
     display: flex;
@@ -207,10 +220,62 @@ body {
     margin-bottom: 15px;
 }
 
+#player-color-picker {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#player-color-label {
+    font-size: clamp(7px, 1.2vw, 10px);
+    color: var(--pixel-blue);
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.45);
+}
+
+#player-color-options {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.player-color-choice {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+}
+
+.player-color-choice[data-color="#00ff41"] { background: #00ff41; }
+.player-color-choice[data-color="#00d4ff"] { background: #00d4ff; }
+.player-color-choice[data-color="#ffb300"] { background: #ffb300; }
+.player-color-choice[data-color="#ff4d6d"] { background: #ff4d6d; }
+
+.player-color-choice:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+}
+
+.player-color-choice.is-selected {
+    border-color: #ffffff;
+    box-shadow:
+        0 0 0 2px rgba(0, 0, 0, 0.7),
+        0 0 14px rgba(255, 255, 255, 0.7);
+}
+
 #start-prompt {
     font-size: clamp(8px, 1.5vw, 12px);
     color: var(--pixel-yellow);
     animation: blink 1s step-end infinite;
+    text-align: center;
 }
 
 @keyframes title-glow {
@@ -514,9 +579,9 @@ button:active {
 
 /* Large Attack button (crossed swords) */
 .mobile-btn-attack {
-    width: 72px;
+    width: 50px;
     height: 72px;
-    min-width: 72px;
+    min-width: 50px;
     min-height: 72px;
     font-size: 12px;
     padding: 4px;

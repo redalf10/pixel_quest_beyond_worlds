@@ -7,14 +7,22 @@ import {
     DASH_SPEED,
     DASH_COOLDOWN,
     DASH_DURATION,
-    POWER_SLASH_COOLDOWN
+    POWER_SLASH_COOLDOWN,
+    BOMB_COOLDOWN,
+    BOMB_DAMAGE,
+    BOMB_KNOCKBACK,
+    LASER_COOLDOWN,
+    HEAL_DROP_CHANCE
 } from '../constants.js';
 import { SoundManager } from './SoundManager.js';
 import { Player } from './Player.js';
 import { Particle } from './Particle.js';
 import { Level } from './Level.js';
+import { Bomb } from './Bomb.js';
+import { HealingItem } from './HealingItem.js';
 
 const soundManager = new SoundManager();
+const ROUND_TIME_MS = 60_000;
 
 export class Game {
     constructor() {
@@ -25,6 +33,7 @@ export class Game {
 
         this.player = new Player();
         this.particles = [];
+        this.bombs = [];
         this.levels = [];
         this.currentLevelIndex = 0;
         this.currentLevel = null;
@@ -37,9 +46,13 @@ export class Game {
 
         this.doorTransitionTimer = 0;
         this.bgPhase = 0;
+        this.roundTimeRemainingMs = ROUND_TIME_MS;
+        this.frameDeltaMs = 16.67;
 
         this.bindElements();
+        this.selectedPlayerColor = '#00ff41';
         this.bindEvents();
+        this.bindPlayerColorPicker();
         this.bindMobileControls();
         this.buildLevels();
         this.detectMobile();
@@ -55,6 +68,11 @@ export class Game {
         this.levelIndicator = document.getElementById('level-indicator');
         this.dashCooldownBar = document.getElementById('dash-cooldown-bar');
         this.powerSlashCooldownBar = document.getElementById('power-slash-cooldown-bar');
+        this.bombCooldownBar = document.getElementById('bomb-cooldown-bar');
+        this.laserCooldownBar = document.getElementById('laser-cooldown-bar');
+        this.roundTimerEl = document.getElementById('round-timer');
+        this.playerColorPicker = document.getElementById('player-color-picker');
+        this.playerColorChoices = Array.from(document.querySelectorAll('.player-color-choice'));
     }
 
     bindEvents() {
@@ -66,18 +84,48 @@ export class Game {
         if (resumeBtn) resumeBtn.addEventListener('click', () => this.resumeFromPause());
         // Tap/click to start on title screen
         this.titleScreen.addEventListener('click', (e) => {
+            if (e.target.closest('#player-color-picker')) return;
             if (this.state === 'title' && e.target.closest('#title-screen')) {
                 soundManager.resume();
                 this.startGame();
             }
         });
         this.titleScreen.addEventListener('touchend', (e) => {
+            if (e.target.closest('#player-color-picker')) return;
             if (this.state === 'title' && e.target.closest('#title-screen')) {
                 e.preventDefault();
                 soundManager.resume();
                 this.startGame();
             }
         }, { passive: false });
+    }
+
+    bindPlayerColorPicker() {
+        if (!this.playerColorChoices?.length) return;
+
+        const applySelection = (color) => {
+            if (!color) return;
+            this.selectedPlayerColor = color;
+            this.player.setColor(color);
+            for (const choice of this.playerColorChoices) {
+                choice.classList.toggle('is-selected', choice.dataset.color === color);
+            }
+        };
+
+        for (const choice of this.playerColorChoices) {
+            choice.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                applySelection(choice.dataset.color);
+            });
+            choice.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                applySelection(choice.dataset.color);
+            }, { passive: false });
+        }
+
+        applySelection(this.playerColorChoices[0]?.dataset.color || this.selectedPlayerColor);
     }
 
     detectMobile() {
@@ -100,6 +148,8 @@ export class Game {
         const attack = document.getElementById('btn-attack');
         const dash = document.getElementById('btn-dash');
         const power = document.getElementById('btn-power');
+        const bomb = document.getElementById('btn-bomb');
+        const laser = document.getElementById('btn-laser') || document.getElementById('btn-lazer');
         const interact = document.getElementById('btn-interact');
         const preventTouch = (e) => e.preventDefault();
 
@@ -198,6 +248,12 @@ export class Game {
         bindBtn(power, () => {
             if (this.state === 'playing' || this.state === 'paused') this.player.usePowerSlash();
         }, () => {});
+        bindBtn(bomb, () => {
+            if (this.state === 'playing' || this.state === 'paused') this.triggerBomb();
+        }, () => {});
+        bindBtn(laser, () => {
+            if (this.state === 'playing' || this.state === 'paused') this.triggerLaser();
+        }, () => {});
         bindBtn(interact, () => {
             if ((this.state === 'playing' || this.state === 'paused') &&
                 this.currentLevel?.door?.isPlayerNear(this.player) && !this.currentLevel.door.locked) {
@@ -206,7 +262,7 @@ export class Game {
         }, () => {});
 
         // Prevent context menu / long-press on action buttons
-        [jump, attack, dash, power, interact].filter(Boolean).forEach(el => {
+        [jump, attack, dash, power, bomb, laser, interact].filter(Boolean).forEach(el => {
             el?.addEventListener('contextmenu', preventTouch);
         });
     }
@@ -272,6 +328,16 @@ export class Game {
                 this.player.usePowerSlash();
                 e.preventDefault();
                 break;
+            case 'f':
+            case 'F':
+                this.triggerBomb();
+                e.preventDefault();
+                break;
+            case 'x':
+            case 'X':
+                this.triggerLaser();
+                e.preventDefault();
+                break;
             case 'ArrowDown':
             case 's':
             case 'S':
@@ -293,10 +359,12 @@ export class Game {
     }
 
     startGame() {
+        this.player.setColor(this.selectedPlayerColor);
         this.titleScreen.classList.add('hidden');
         this.state = 'playing';
         this.currentLevelIndex = 0;
         this.keyCollected = false;
+        this.roundTimeRemainingMs = ROUND_TIME_MS;
         this.loadLevel(this.currentLevelIndex);
         this.gameLoop();
     }
@@ -315,6 +383,116 @@ export class Game {
 
         this.levelIndicator.textContent = `Level ${index + 1}`;
         this.particles = [];
+        this.bombs = [];
+        this.roundTimeRemainingMs = ROUND_TIME_MS;
+        this.updateRoundTimerUI();
+    }
+
+    updateRoundTimerUI() {
+        if (!this.roundTimerEl) return;
+        const totalSeconds = Math.ceil(this.roundTimeRemainingMs / 1000);
+        const safeSeconds = Math.max(0, totalSeconds);
+        const minutes = Math.floor(safeSeconds / 60);
+        const seconds = safeSeconds % 60;
+        this.roundTimerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        this.roundTimerEl.classList.toggle('danger', safeSeconds <= 10);
+    }
+
+    triggerBomb() {
+        if (!this.player.useBomb()) return;
+        const x = this.player.facingRight ? this.player.x + this.player.width + 4 : this.player.x - 4;
+        const y = this.player.y + this.player.height * 0.45;
+        this.bombs.push(new Bomb(x, y, this.player.facingRight));
+        soundManager.playBombDeploySound();
+    }
+
+    triggerLaser() {
+        const beam = this.player.useLaser();
+        if (!beam) return;
+        soundManager.playLaserSound();
+        this.applyLaserDamage(beam);
+    }
+
+    applyLaserDamage(beam) {
+        const minX = Math.min(beam.startX, beam.endX);
+        const maxX = Math.max(beam.startX, beam.endX);
+        const minY = beam.startY - beam.thickness / 2;
+        const maxY = beam.startY + beam.thickness / 2;
+
+        for (const enemy of this.currentLevel.enemies) {
+            if (enemy.health <= 0) continue;
+            const ex1 = enemy.x;
+            const ex2 = enemy.x + enemy.width;
+            const ey1 = enemy.y;
+            const ey2 = enemy.y + enemy.height;
+            const intersects = ex2 > minX && ex1 < maxX && ey2 > minY && ey1 < maxY;
+            if (!intersects) continue;
+
+            enemy.takeDamage(beam.damage);
+            enemy.applyBurn?.(beam.burnTicks, beam.burnDamage);
+
+            if (enemy.health <= 0) this.onEnemyDefeated(enemy);
+        }
+    }
+
+    explodeBomb(bomb) {
+        soundManager.playBombExplodeSound();
+        const cx = bomb.x;
+        const cy = bomb.y;
+        const radius = bomb.explosionRadius;
+
+        for (const enemy of this.currentLevel.enemies) {
+            if (enemy.health <= 0) continue;
+            const ex = enemy.x + enemy.width / 2;
+            const ey = enemy.y + enemy.height / 2;
+            const dx = ex - cx;
+            const dy = ey - cy;
+            const distSq = dx * dx + dy * dy;
+            if (distSq > radius * radius) continue;
+
+            enemy.takeDamage(BOMB_DAMAGE);
+            const dist = Math.max(Math.sqrt(distSq), 1);
+            enemy.vx += (dx / dist) * BOMB_KNOCKBACK;
+            enemy.vy -= Math.max(2.5, (1 - dist / radius) * BOMB_KNOCKBACK * 0.7);
+
+            if (enemy.health <= 0) this.onEnemyDefeated(enemy);
+        }
+
+        for (let i = 0; i < 20; i++) {
+            const angle = (Math.PI * 2 * i) / 20;
+            this.particles.push(new Particle(
+                cx,
+                cy,
+                Math.cos(angle) * 5,
+                Math.sin(angle) * 5,
+                'rgb(255, 120, 20)',
+                24
+            ));
+        }
+    }
+
+    onEnemyDefeated(enemy) {
+        if (enemy.defeatHandled) return;
+        enemy.defeatHandled = true;
+
+        soundManager.playEnemyDefeatSound();
+        for (let i = 0; i < 12; i++) {
+            const angle = (Math.PI * 2 * i) / 12;
+            this.particles.push(new Particle(
+                enemy.x + enemy.width / 2,
+                enemy.y + enemy.height / 2,
+                Math.cos(angle) * 4,
+                Math.sin(angle) * 4,
+                enemy.isBoss ? 'rgb(255, 0, 64)' : 'rgb(191, 0, 255)',
+                30
+            ));
+        }
+
+        if (Math.random() < HEAL_DROP_CHANCE) {
+            const dropX = enemy.x + enemy.width / 2 - 12;
+            const dropY = enemy.y + enemy.height - 24;
+            (this.currentLevel.healingItems ||= []).push(new HealingItem(dropX, dropY));
+        }
     }
 
     enterDoor() {
@@ -364,6 +542,14 @@ export class Game {
 
         if (this.state !== 'playing') return;
 
+        this.roundTimeRemainingMs = Math.max(0, this.roundTimeRemainingMs - this.frameDeltaMs);
+        this.updateRoundTimerUI();
+        if (this.roundTimeRemainingMs <= 0) {
+            this.state = 'gameOver';
+            this.gameOverScreen.classList.remove('hidden');
+            return;
+        }
+
         // Apply movement from key state (skip when dashing)
         if (!this.player.dashing) {
             if (this.keys.left && !this.keys.right) this.player.move(-1);
@@ -377,6 +563,11 @@ export class Game {
         for (const enemy of this.currentLevel.enemies) {
             if (enemy.health <= 0) continue;
             enemy.update(this.currentLevel.platforms, this.player, this.dtScale || 1);
+
+            if (enemy.health <= 0) {
+                this.onEnemyDefeated(enemy);
+                continue;
+            }
 
             // Contact damage
             if (this.player.collidesWith(enemy)) {
@@ -407,6 +598,13 @@ export class Game {
             this.keyCollected = true;
         }
 
+        for (const bomb of this.bombs) {
+            const wasExploded = bomb.exploded;
+            bomb.update(this.currentLevel.platforms, this.dtScale || 1);
+            if (!wasExploded && bomb.exploded) this.explodeBomb(bomb);
+        }
+        this.bombs = this.bombs.filter((bomb) => !bomb.isExpired());
+
         for (const item of this.currentLevel.healingItems || []) {
             if (item.collidesWith(this.player)) {
                 item.collect(this.player);
@@ -434,18 +632,7 @@ export class Game {
                     ar.y < enemy.y + enemy.height && ar.y + ar.height > enemy.y) {
                     enemy.takeDamage(damage);
                     if (enemy.health <= 0) {
-                        soundManager.playEnemyDefeatSound();
-                        for (let i = 0; i < 12; i++) {
-                            const angle = (Math.PI * 2 * i) / 12;
-                            this.particles.push(new Particle(
-                                enemy.x + enemy.width / 2,
-                                enemy.y + enemy.height / 2,
-                                Math.cos(angle) * 4,
-                                Math.sin(angle) * 4,
-                                enemy.isBoss ? 'rgb(255, 0, 64)' : 'rgb(191, 0, 255)',
-                                30
-                            ));
-                        }
+                        this.onEnemyDefeated(enemy);
                     }
                 }
             }
@@ -542,6 +729,8 @@ export class Game {
                     if (enemy.health > 0) enemy.draw(this.ctx);
                 }
 
+                this.bombs.forEach((bomb) => bomb.draw(this.ctx));
+
                 this.particles.forEach(p => p.draw(this.ctx));
 
                 this.player.draw(this.ctx);
@@ -550,6 +739,8 @@ export class Game {
             this.healthBar.style.width = `${(this.player.health / this.player.maxHealth) * 100}%`;
             this.dashCooldownBar.style.width = `${(1 - this.player.dashCooldown / DASH_COOLDOWN) * 100}%`;
             this.powerSlashCooldownBar.style.width = `${(1 - this.player.powerSlashCooldown / POWER_SLASH_COOLDOWN) * 100}%`;
+            if (this.bombCooldownBar) this.bombCooldownBar.style.width = `${(1 - this.player.bombCooldown / BOMB_COOLDOWN) * 100}%`;
+            if (this.laserCooldownBar) this.laserCooldownBar.style.width = `${(1 - this.player.laserCooldown / LASER_COOLDOWN) * 100}%`;
         }
 
         if (this.state === 'transition' && this.fadeAlpha > 0) {
@@ -565,6 +756,7 @@ export class Game {
     gameLoop(timestamp = 0) {
         const deltaTime = this.lastTime ? timestamp - this.lastTime : 16.67;
         this.lastTime = timestamp;
+        this.frameDeltaMs = Math.min(Math.max(deltaTime, 1), 100);
         // Scale factor: game assumes 60fps (~16.67ms per frame). Cap dt to avoid physics explosions.
         this.dtScale = Math.min(Math.max(deltaTime, 1) / 16.67, 3);
         this.bgPhase = (this.bgPhase || 0) + 0.012;
@@ -582,8 +774,10 @@ export class Game {
         this.state = 'playing';
         this.currentLevelIndex = 0;
         this.keyCollected = false;
+        this.roundTimeRemainingMs = ROUND_TIME_MS;
         this.buildLevels();
         this.loadLevel(0);
+        this.bombs = [];
         this.gameLoop();
     }
 

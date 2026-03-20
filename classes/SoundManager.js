@@ -83,4 +83,18 @@ export class SoundManager {
         this.playTone(554, 0.08);
         this.playTone(659, 0.12);
     }
+
+    playBombDeploySound() {
+        this.playTone(180, 0.06, 'triangle');
+    }
+
+    playBombExplodeSound() {
+        this.playTone(90, 0.14, 'sawtooth');
+        setTimeout(() => this.playTone(65, 0.18, 'sawtooth'), 40);
+    }
+
+    playLaserSound() {
+        this.playTone(520, 0.06, 'square');
+        setTimeout(() => this.playTone(760, 0.08, 'square'), 20);
+    }
 }

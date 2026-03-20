@@ -38,6 +38,10 @@ export class Enemy {
         this.attackCooldownTimer = 30; // Initial delay before first attack
         this.attackDealtThisRound = false; // Only deal damage once per attack animation
         this.jumpCooldown = 0;
+        this.burnTicks = 0;
+        this.burnDamage = 0;
+        this.burnTickTimer = 0;
+        this.defeatHandled = false;
         const JUMP_FORCE = isBoss ? -13 : -12;
         this.jumpForce = options.jumpForce ?? JUMP_FORCE;
     }
@@ -106,6 +110,15 @@ export class Enemy {
 
         if (this.jumpCooldown > 0) this.jumpCooldown--;
 
+        if (this.burnTicks > 0) {
+            this.burnTickTimer -= dtScale;
+            if (this.burnTickTimer <= 0) {
+                this.takeDamage(this.burnDamage);
+                this.burnTicks--;
+                this.burnTickTimer = 22;
+            }
+        }
+
         // Patrol reversal (only when not engaging player)
         if (!player || player.health <= 0) {
             this.facingRight = this.vx > 0;
@@ -166,6 +179,12 @@ export class Enemy {
         this.health = Math.max(0, this.health - amount);
     }
 
+    applyBurn(ticks, damagePerTick) {
+        this.burnTicks = Math.max(this.burnTicks, ticks);
+        this.burnDamage = Math.max(this.burnDamage, damagePerTick);
+        this.burnTickTimer = Math.min(this.burnTickTimer || 22, 8);
+    }
+
     draw(ctx) {
         ctx.fillStyle = this.isBoss ? '#ff0040' : '#bf00ff';
         ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -175,6 +194,11 @@ export class Enemy {
             const ar = this.getAttackRect();
             ctx.fillStyle = 'rgba(255, 100, 100, 0.5)';
             ctx.fillRect(ar.x, ar.y, ar.width, ar.height);
+        }
+
+        if (this.burnTicks > 0 && this.health > 0) {
+            ctx.fillStyle = 'rgba(255, 120, 0, 0.45)';
+            ctx.fillRect(this.x - 2, this.y - 2, this.width + 4, this.height + 4);
         }
 
         // Health bar for boss

@@ -32,7 +32,20 @@
                         <div id="power-slash-cooldown-bar" class="skill-cooldown-bar"></div>
                     </div>
                 </div>
+                <div class="skill-slot" title="Bomb (F)">
+                    <span class="skill-label">F</span>
+                    <div class="skill-cooldown-bg">
+                        <div id="bomb-cooldown-bar" class="skill-cooldown-bar"></div>
+                    </div>
+                </div>
+                <div class="skill-slot" title="Laser (X)">
+                    <span class="skill-label">X</span>
+                    <div class="skill-cooldown-bg">
+                        <div id="laser-cooldown-bar" class="skill-cooldown-bar"></div>
+                    </div>
+                </div>
             </div>
+            <div id="round-timer">01:00</div>
             <div id="level-indicator">Level 1</div>
         </div>
 
@@ -40,9 +53,18 @@
         <div id="title-screen">
             <h1 id="game-title">PIXEL QUEST BEYOND WORLDS</h1>
             <p id="game-subtitle">A Retro-Style Indie Platformer with Multiverse Exploration</p>
-            <p id="controls-hint" class="desktop-only">WASD: Move | W: Jump | Space: Attack | Q: Dash | R: Power Slash | E: Interact</p>
+            <p id="controls-hint" class="desktop-only">WASD: Move | W: Jump | Space: Attack | Q: Dash | R: Power Slash | F: Bomb | X: Laser | E: Interact</p>
             <p id="controls-hint-mobile" class="mobile-only">Drag joystick to move · Tap buttons to play</p>
-            <p id="start-prompt">Press Enter or Tap to Start</p>
+            <div id="player-color-picker">
+                <p id="player-color-label">Choose Player Color</p>
+                <div id="player-color-options">
+                    <button class="player-color-choice is-selected" data-color="#00ff41" type="button" aria-label="Neon green"></button>
+                    <button class="player-color-choice" data-color="#00d4ff" type="button" aria-label="Cyber blue"></button>
+                    <button class="player-color-choice" data-color="#ffb300" type="button" aria-label="Sun amber"></button>
+                    <button class="player-color-choice" data-color="#ff4d6d" type="button" aria-label="Rose red"></button>
+                </div>
+            </div>
+            <p id="start-prompt">Choose color, then press Enter or tap to start</p>
         </div>
 
         <!-- Level Complete Screen -->
@@ -76,7 +98,8 @@
             <div id="mobile-utility-row">
                 <button id="btn-dash" class="mobile-btn mobile-btn-purple" type="button" aria-label="Dash">Dash</button>
                 <button id="btn-power" class="mobile-btn mobile-btn-purple" type="button" aria-label="Power Slash">Slash</button>
-                
+                <button id="btn-bomb" class="mobile-btn mobile-btn-purple" type="button" aria-label="Dash">Bomb</button>
+                <button id="btn-laser" class="mobile-btn mobile-btn-purple" type="button" aria-label="Laser">Laser</button>
                 <!-- <button id="btn-jump" class="mobile-btn mobile-btn-teal" type="button" aria-label="Jump">Jump</button> -->
             </div>
             <div id="mobile-main-row">
