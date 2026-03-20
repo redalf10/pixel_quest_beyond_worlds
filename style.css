@@ -404,6 +404,7 @@ button:active {
 #joystick-container {
     flex-shrink: 0;
     padding: 10px;
+    padding-bottom: 50px;
 }
 
 #joystick-base {
