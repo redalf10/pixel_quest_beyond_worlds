@@ -107,27 +107,27 @@ body {
 /* Skills */
 #skills-container {
     display: flex;
-    gap: 12px;
+    gap: 5px;
     align-items: center;
 }
 
 .skill-slot {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
 }
 
 .skill-label {
     color: var(--pixel-blue);
-    font-size: 8px;
+    font-size: 4px;
     min-width: 12px;
 }
 
 .skill-cooldown-bg {
-    width: 36px;
-    height: 10px;
+    width: 30px;
+    height: 8px;
     background: rgba(0, 0, 0, 0.8);
-    border: 2px solid var(--pixel-blue);
+    border: 1px solid var(--pixel-blue);
     border-radius: 2px;
     overflow: hidden;
 }
@@ -371,25 +371,39 @@ button:active {
 /* Mobile Touch Controls - Pixel design */
 #mobile-controls {
     position: absolute;
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    bottom: 10px;
     left: 0;
     right: 0;
-    padding: 0 16px 24px;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    pointer-events: none;
-    z-index: 5;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 0 12px;
+    pointer-events: all;
 }
 
 #mobile-controls * {
     pointer-events: auto;
 }
 
+/* Top utility row (dash, slash, interact, jump) */
+#mobile-utility-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* Main controls row: joystick and attack are intentionally aligned */
+#mobile-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 /* Joystick - left side: dark green outer ring, neon green inner stick, 3D glow */
 #joystick-container {
     flex-shrink: 0;
-    align-self: center;
+    padding: 10px;
 }
 
 #joystick-base {
@@ -435,31 +449,6 @@ button:active {
     box-shadow: 0 0 18px rgba(0, 255, 65, 0.6);
 }
 
-/* Right side - button cluster */
-#mobile-buttons-right {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-end;
-}
-
-#mobile-buttons-top {
-    display: flex;
-    gap: 6px;
-}
-
-#mobile-buttons-bottom {
-    display: flex;
-    gap: 6px;
-    align-items: flex-end;
-}
-
-#mobile-buttons-left-col {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
 /* Pixel-art button base */
 .mobile-btn {
     font-family: 'Press Start 2P', monospace;
@@ -471,6 +460,7 @@ button:active {
     align-items: center;
     justify-content: center;
     image-rendering: pixelated;
+    transition: all 0.1s ease-out;
 }
 
 /* Teal/cyan buttons (E, Jump, Attack) */
@@ -487,7 +477,7 @@ button:active {
 .mobile-btn-teal:active {
     background: #00d4ff;
     color: #0a0a0f;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    transform: scale(0.95);
 }
 
 /* Purple buttons (Q, R) */
@@ -505,27 +495,31 @@ button:active {
     background: #ff00e5;
     color: #0a0a0f;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 /* Small buttons */
-#mobile-buttons-top .mobile-btn,
-#mobile-buttons-left-col .mobile-btn {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-    font-size: 12px;
-    padding: 0;
+#mobile-utility-row .mobile-btn {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+    font-size: 10px;
+    padding: 4px;
+    line-height: 1.2;
+    word-break: break-word;
 }
 
 /* Large Attack button (crossed swords) */
 .mobile-btn-attack {
-    width: 64px;
-    height: 64px;
-    min-width: 64px;
-    min-height: 64px;
-    font-size: 22px;
-    padding: 0;
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    min-height: 72px;
+    font-size: 12px;
+    padding: 4px;
+    line-height: 1.2;
 }
 
 /* Prevent scroll/zoom on game area (mobile) */
@@ -551,8 +545,6 @@ button:active {
 
     #game-canvas {
         width: 100vw !important;
-        height: auto !important;
-        max-height: calc(100vh - 160px);
     }
 
     #ui-overlay {
@@ -571,5 +563,88 @@ button:active {
     .skill-cooldown-bg {
         width: 28px;
         height: 8px;
+    }
+
+    /* Mobile button adjustments for better accessibility */
+    #mobile-utility-row .mobile-btn {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        min-height: 52px;
+        font-size: 9px;
+        border: 3px solid;
+        padding: 3px;
+        line-height: 1.1;
+    }
+
+    .mobile-btn-attack {
+        width: 68px;
+        height: 68px;
+        min-width: 68px;
+        min-height: 68px;
+        font-size: 11px;
+        padding: 3px;
+        line-height: 1.1;
+    }
+}
+
+/* Extra small screens / phones in portrait */
+@media (max-width: 480px) {
+    #mobile-controls {
+        padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+        gap: 8px;
+    }
+
+    #mobile-utility-row {
+        gap: 6px;
+    }
+
+    #mobile-utility-row .mobile-btn {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+        font-size: 8px;
+        border: 2px solid;
+        padding: 2px;
+        line-height: 1;
+    }
+
+    .mobile-btn-attack {
+        width: 60px;
+        height: 60px;
+        min-width: 60px;
+        min-height: 60px;
+        font-size: 9px;
+        padding: 2px;
+        line-height: 1;
+    }
+}
+
+/* Landscape orientation - optimize for wide but short viewports */
+@media (max-height: 500px) {
+    #mobile-controls {
+        bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+    }
+
+    #mobile-utility-row .mobile-btn {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 7px;
+        padding: 2px;
+        line-height: 1;
+    }
+
+    .mobile-btn-attack {
+        width: 56px;
+        height: 56px;
+        min-width: 56px;
+        min-height: 56px;
+        font-size: 8px;
+        padding: 2px;
+        line-height: 1;
     }
 }

@@ -73,23 +73,19 @@
 
         <!-- Mobile Touch Controls - Pixel design: joystick left, buttons right -->
         <div id="mobile-controls" class="mobile-only">
-            <div id="joystick-container">
-                <div id="joystick-base" aria-label="Movement joystick">
-                    <div id="joystick-stick"></div>
-                </div>
+            <div id="mobile-utility-row">
+                <button id="btn-dash" class="mobile-btn mobile-btn-purple" type="button" aria-label="Dash">Dash</button>
+                <button id="btn-power" class="mobile-btn mobile-btn-purple" type="button" aria-label="Power Slash">Slash</button>
+                <button id="btn-interact" class="mobile-btn mobile-btn-teal" type="button" aria-label="Interact">Enter</button>
+                <button id="btn-jump" class="mobile-btn mobile-btn-teal" type="button" aria-label="Jump">Jump</button>
             </div>
-            <div id="mobile-buttons-right">
-                <div id="mobile-buttons-top">
-                    <button id="btn-dash" class="mobile-btn mobile-btn-purple" type="button" aria-label="Dash">Q</button>
-                    <button id="btn-power" class="mobile-btn mobile-btn-purple" type="button" aria-label="Power Slash">R</button>
-                </div>
-                <div id="mobile-buttons-bottom">
-                    <div id="mobile-buttons-left-col">
-                        <button id="btn-interact" class="mobile-btn mobile-btn-teal" type="button" aria-label="Interact">E</button>
-                        <button id="btn-jump" class="mobile-btn mobile-btn-teal" type="button" aria-label="Jump">↑</button>
+            <div id="mobile-main-row">
+                <div id="joystick-container">
+                    <div id="joystick-base" aria-label="Movement joystick">
+                        <div id="joystick-stick"></div>
                     </div>
-                    <button id="btn-attack" class="mobile-btn mobile-btn-teal mobile-btn-attack" type="button" aria-label="Attack">⚔</button>
                 </div>
+                <button id="btn-attack" class="mobile-btn mobile-btn-teal mobile-btn-attack" type="button" aria-label="Attack">Attack</button>
             </div>
         </div>
     </div>
@@ -104,6 +100,6 @@
     <audio id="sfx-damage" preload="auto"></audio>
     <audio id="sfx-enemy-defeat" preload="auto"></audio>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
