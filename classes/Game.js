@@ -42,7 +42,7 @@ export class Game {
         this.state = 'title'; // title, playing, levelComplete, gameOver, ending, transition, paused
         this.lastTime = 0;
         this.fadeAlpha = 0;
-        this.keys = { left: false, right: false };
+        this.keys = { left: false, right: false, jump: false };
 
         this.doorTransitionTimer = 0;
         this.bgPhase = 0;
@@ -155,7 +155,6 @@ export class Game {
 
         // Virtual joystick (left/right = move, up = jump)
         if (joystickBase && joystickStick) {
-            let jumpTriggeredThisHold = false;
             const updateStick = (clientX, clientY) => {
                 const rect = joystickBase.getBoundingClientRect();
                 const cx = rect.left + rect.width / 2;
@@ -176,18 +175,14 @@ export class Game {
                 const jumpThreshold = radius * 0.4;
                 this.keys.left = dx < -deadZone;
                 this.keys.right = dx > deadZone;
-                // Up = jump (once per stick hold)
-                if (dy < -jumpThreshold && !jumpTriggeredThisHold && (this.state === 'playing' || this.state === 'paused')) {
-                    jumpTriggeredThisHold = true;
-                    this.player.jump();
-                }
+                this.keys.jump = dy < -jumpThreshold;
             };
             const resetStick = () => {
-                jumpTriggeredThisHold = false;
                 joystickBase.classList.remove('active');
                 joystickStick.style.transform = 'translate(-50%, -50%)';
                 this.keys.left = false;
                 this.keys.right = false;
+                this.keys.jump = false;
                 document.removeEventListener('touchmove', onDocTouchMove);
                 document.removeEventListener('touchend', onDocTouchEnd);
             };
@@ -237,8 +232,11 @@ export class Game {
         };
 
         bindBtn(jump, () => {
+            this.keys.jump = true;
             if (this.state === 'playing' || this.state === 'paused') this.player.jump();
-        }, () => {});
+        }, () => {
+            this.keys.jump = false;
+        });
         bindBtn(attack, () => {
             if (this.state === 'playing' || this.state === 'paused') this.player.attack();
         }, () => {});
@@ -311,6 +309,7 @@ export class Game {
             case 'ArrowUp':
             case 'w':
             case 'W':
+                this.keys.jump = true;
                 this.player.jump();
                 e.preventDefault();
                 break;
@@ -356,6 +355,7 @@ export class Game {
     onKeyUp(e) {
         if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.keys.left = false;
         if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.keys.right = false;
+        if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') this.keys.jump = false;
     }
 
     startGame() {
@@ -558,6 +558,7 @@ export class Game {
         } else {
             this.player.vx = (this.player.facingRight ? 1 : -1) * DASH_SPEED;
         }
+        if (this.keys.jump) this.player.jump();
         this.player.update(this.currentLevel.platforms, this.dtScale || 1);
 
         for (const enemy of this.currentLevel.enemies) {
