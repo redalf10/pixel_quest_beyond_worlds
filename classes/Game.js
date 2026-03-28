@@ -1003,11 +1003,10 @@ export class Game {
     restart() {
         this.gameOverScreen.classList.add('hidden');
         this.state = 'playing';
-        this.currentLevelIndex = 0;
         this.keyCollected = false;
         this.roundTimeRemainingMs = ROUND_TIME_MS;
         this.buildLevels();
-        this.loadLevel(0);
+        this.loadLevel(this.currentLevelIndex);
         this.bombs = [];
         this.gameLoop();
     }
