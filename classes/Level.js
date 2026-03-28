@@ -150,7 +150,8 @@ export class Level {
                 speed,
                 patrolRange: 80 + difficulty * 6,
                 attackCooldown: attackCd,
-                attackRange
+                attackRange,
+                levelIndex: this.index
             }));
         }
 

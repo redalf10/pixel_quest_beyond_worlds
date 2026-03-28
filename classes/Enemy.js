@@ -44,6 +44,17 @@ export class Enemy {
         this.defeatHandled = false;
         const JUMP_FORCE = isBoss ? -13 : -12;
         this.jumpForce = options.jumpForce ?? JUMP_FORCE;
+        
+        // Load enemy image based on level index
+        this.image = new Image();
+        if (isBoss) {
+            this.image.src = './enemies/DiscMimic.png'; // Boss uses the first enemy type
+        } else {
+            const levelIndex = options.levelIndex || 0;
+            const enemyTypes = ['DiscMimic.png', 'MemoryCardMimic.png', 'Notberry.png'];
+            const enemyIndex = levelIndex % enemyTypes.length;
+            this.image.src = `./enemies/${enemyTypes[enemyIndex]}`;
+        }
     }
 
     update(platforms, player, dtScale = 1) {
@@ -186,8 +197,22 @@ export class Enemy {
     }
 
     draw(ctx) {
-        ctx.fillStyle = this.isBoss ? '#ff0040' : '#bf00ff';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        // Draw enemy image if loaded
+        if (this.image && this.image.complete) {
+            ctx.save();
+            if (!this.facingRight) {
+                ctx.translate(this.x + this.width, this.y);
+                ctx.scale(-1, 1);
+                ctx.drawImage(this.image, 0, 0, this.width, this.height);
+            } else {
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+            }
+            ctx.restore();
+        } else {
+            // Fallback if image hasn't loaded yet
+            ctx.fillStyle = this.isBoss ? '#ff0040' : '#bf00ff';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
 
         // Attack hitbox visual (when attacking)
         if (this.attacking && this.attackTimer > 8) {

@@ -57,9 +57,42 @@ export class Player {
         this.laserCooldown = 0;
         this.laserTimer = 0;
         this.lastLaser = null;
+        
+        // Animation
+        this.sprites = {
+            idle: [],
+            run: [],
+            attack: []
+        };
+        this.currentAnimation = 'idle';
+        this.currentFrame = 0;
+        this.frameTimer = 0;
+        this.frameSpeed = 6; // Lower = faster
+        
+        this.loadSprites();
+    }
+    
+    loadSprites() {
+        // Load sprite sheets from player_1 folder
+        const spriteData = [
+            { name: 'idle', frames: 3 },
+            { name: 'run', frames: 5 },
+            { name: 'attack', frames: 1 }
+        ];
+        
+        spriteData.forEach(data => {
+            for (let i = 1; i <= data.frames; i++) {
+                const img = new Image();
+                img.src = `./player_1/${data.name}_${i}.png`;
+                this.sprites[data.name].push(img);
+            }
+        });
     }
 
     update(platforms, dtScale = 1) {
+        // Update animation
+        this.updateAnimation();
+        
         // Gravity
         this.vy += GRAVITY * dtScale;
         this.vy = Math.min(this.vy, MAX_FALL_SPEED);
@@ -134,6 +167,39 @@ export class Player {
         if (this.bombCooldown > 0) this.bombCooldown--;
         if (this.laserCooldown > 0) this.laserCooldown--;
         if (this.laserTimer > 0) this.laserTimer -= dtScale;
+    }
+
+    updateAnimation() {
+        // Determine which animation should play
+        let nextAnimation = 'idle';
+        
+        if (this.attacking || this.powerSlashing) {
+            nextAnimation = 'attack';
+        } else if (Math.abs(this.vx) > 0.5) {
+            nextAnimation = 'run';
+        } else {
+            nextAnimation = 'idle';
+        }
+        
+        // Switch animation if state changed
+        if (nextAnimation !== this.currentAnimation) {
+            this.currentAnimation = nextAnimation;
+            this.currentFrame = 0;
+            this.frameTimer = 0;
+        }
+        
+        // Update frame timer
+        this.frameTimer++;
+        if (this.frameTimer >= this.frameSpeed) {
+            this.frameTimer = 0;
+            this.currentFrame++;
+            
+            // Loop animation
+            const maxFrame = this.sprites[this.currentAnimation].length;
+            if (this.currentFrame >= maxFrame) {
+                this.currentFrame = 0;
+            }
+        }
     }
 
     collidesWith(rect) {
@@ -254,94 +320,36 @@ export class Player {
         // Blink when invincible
         if (this.invincible && Math.floor(Date.now() / 100) % 2 === 0) return;
 
-        const x = this.x, y = this.y;
-        const facing = this.facingRight;
-        const c = this.color;
-        const isAtk = this.isAttackActive();
-        const isPowerSlash = this.powerSlashing && this.powerSlashTimer > 12;
-        const bladeLen = isAtk ? (isPowerSlash ? 22 : 18) : 12;
-
-        // ── SWORD ──────────────────────────────────────────────────────
-        if (facing) {
-            ctx.fillStyle = '#6b3a1f'; ctx.fillRect(x + 24, y + 13, 5, 7);         // grip
-            ctx.fillStyle = '#d4a017'; ctx.fillRect(x + 22, y + 10, 3, 12);         // crossguard
-            if (isPowerSlash) { ctx.fillStyle = 'rgba(255,140,0,0.85)'; ctx.fillRect(x + 25, y + 13, bladeLen + 2, 5); } // power glow
-            ctx.fillStyle = '#c8d8e8'; ctx.fillRect(x + 25, y + 14, bladeLen, 3);  // blade
-            ctx.fillStyle = '#e8f4fc'; ctx.fillRect(x + 25, y + 14, bladeLen, 1);  // blade edge shine
-            ctx.fillStyle = '#c8d8e8'; ctx.fillRect(x + 25 + bladeLen, y + 15, 3, 1); // tip
-        } else {
-            ctx.fillStyle = '#6b3a1f'; ctx.fillRect(x - 1, y + 13, 5, 7);          // grip
-            ctx.fillStyle = '#d4a017'; ctx.fillRect(x + 3,  y + 10, 3, 12);         // crossguard
-            if (isPowerSlash) { ctx.fillStyle = 'rgba(255,140,0,0.85)'; ctx.fillRect(x - bladeLen - 2, y + 13, bladeLen + 2, 5); }
-            ctx.fillStyle = '#c8d8e8'; ctx.fillRect(x - bladeLen, y + 14, bladeLen, 3);
-            ctx.fillStyle = '#e8f4fc'; ctx.fillRect(x - bladeLen, y + 14, bladeLen, 1);
-            ctx.fillStyle = '#c8d8e8'; ctx.fillRect(x - bladeLen - 3, y + 15, 3, 1);
-        }
-
-        // ── GREAVES (armored legs) ─────────────────────────────────────
-        ctx.fillStyle = '#3a3a50';
-        ctx.fillRect(x + 4,  y + 23, 9, 9);   // left leg dark base
-        ctx.fillRect(x + 15, y + 23, 9, 9);   // right leg dark base
-        ctx.fillStyle = c;
-        ctx.fillRect(x + 5,  y + 24, 6, 5);   // left greave plate
-        ctx.fillRect(x + 16, y + 24, 6, 5);   // right greave plate
-        ctx.fillStyle = '#1e1e2c';
-        ctx.fillRect(x + 3,  y + 29, 10, 3);  // left boot
-        ctx.fillRect(x + 15, y + 29, 10, 3);  // right boot
-
-        // ── BELT ───────────────────────────────────────────────────────
-        ctx.fillStyle = '#2c1a08'; ctx.fillRect(x + 3, y + 20, 22, 3);   // belt strap
-        ctx.fillStyle = '#d4a017'; ctx.fillRect(x + 11, y + 20, 6, 3);   // gold buckle
-        ctx.fillStyle = '#8b6000'; ctx.fillRect(x + 12, y + 21, 4, 1);   // buckle detail
-
-        // ── CHEST ARMOR ────────────────────────────────────────────────
-        ctx.fillStyle = c; ctx.fillRect(x + 3, y + 9, 22, 11);            // chest base
-        ctx.fillStyle = 'rgba(255,255,255,0.17)'; ctx.fillRect(x + 8, y + 10, 12, 8);  // breastplate sheen
-        ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fillRect(x + 13, y + 10, 2, 9);        // center ridge
-        ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(x + 3, y + 19, 22, 1);        // chest bottom rim
-
-        // ── PAULDRONS (shoulder guards) ────────────────────────────────
-        ctx.fillStyle = c;
-        ctx.fillRect(x,      y + 9, 5, 7);   // left
-        ctx.fillRect(x + 23, y + 9, 5, 7);   // right
-        ctx.fillStyle = 'rgba(0,0,0,0.35)';
-        ctx.fillRect(x,      y + 15, 5, 1);  // left rim
-        ctx.fillRect(x + 23, y + 15, 5, 1);  // right rim
-        ctx.fillStyle = 'rgba(255,255,255,0.25)';
-        ctx.fillRect(x + 1,  y + 9, 3, 2);   // left highlight
-        ctx.fillRect(x + 24, y + 9, 3, 2);   // right highlight
-
-        // ── HELMET ─────────────────────────────────────────────────────
-        ctx.fillStyle = c;
-        ctx.fillRect(x + 4,  y + 1, 20, 9);  // main plate
-        ctx.fillRect(x + 2,  y + 3,  4, 7);  // left cheek guard
-        ctx.fillRect(x + 22, y + 3,  4, 7);  // right cheek guard
-        ctx.fillStyle = '#d4a017'; ctx.fillRect(x + 10, y, 8, 3);         // gold crest
-        ctx.fillStyle = '#ffe566'; ctx.fillRect(x + 11, y, 6, 1);         // crest shine
-        ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(x + 5, y + 1, 18, 2); // helmet highlight
-        ctx.fillStyle = '#08080f'; ctx.fillRect(x + 4, y + 5, 20, 4);     // visor slit
-
-        // Glowing eyes through visor
-        ctx.fillStyle = '#00ffcc';
-        if (facing) {
-            ctx.fillRect(x + 15, y + 6, 4, 2);
-            ctx.fillRect(x + 21, y + 7, 2, 1);
-        } else {
-            ctx.fillRect(x + 9, y + 6, 4, 2);
-            ctx.fillRect(x + 5, y + 7, 2, 1);
+        const x = this.x;
+        const y = this.y;
+        const currentSprite = this.sprites[this.currentAnimation][this.currentFrame];
+        
+        // Draw sprite
+        if (currentSprite && currentSprite.complete) {
+            ctx.save();
+            
+            const spriteWidth = 48;
+            const spriteHeight = 64;
+            const offsetX = (spriteWidth - this.width) / 2;
+            const offsetY = spriteHeight - this.height;
+            
+            // Flip sprite if facing left
+            if (!this.facingRight) {
+                ctx.translate(x + spriteWidth - offsetX, y - offsetY);
+                ctx.scale(-1, 1);
+                ctx.drawImage(currentSprite, 0, 0, spriteWidth, spriteHeight);
+            } else {
+                ctx.drawImage(currentSprite, x - offsetX, y - offsetY, spriteWidth, spriteHeight);
+            }
+            
+            ctx.restore();
         }
 
         // ── DASH TRAIL ─────────────────────────────────────────────────
         if (this.dashing) {
+            const c = this.color;
             ctx.fillStyle = c + '55';
-            ctx.fillRect(facing ? x - 10 : x + this.width, y + 2, 10, this.height - 4);
-        }
-
-        // ── ATTACK HITBOX VISUAL ───────────────────────────────────────
-        if (isAtk) {
-            const ar = this.getAttackRect();
-            ctx.fillStyle = isPowerSlash ? 'rgba(255,100,0,0.4)' : 'rgba(255,220,0,0.3)';
-            ctx.fillRect(ar.x, ar.y, ar.width, ar.height);
+            ctx.fillRect(this.facingRight ? x - 10 : x + this.width, y + 2, 10, this.height - 4);
         }
 
         // ── LASER ──────────────────────────────────────────────────────

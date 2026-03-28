@@ -38,6 +38,10 @@ export class Game {
         this.currentLevelIndex = 0;
         this.currentLevel = null;
         this.keyCollected = false;
+        
+        // Load platform texture
+        this.logImage = new Image();
+        this.logImage.src = './components/log.png';
 
         this.state = 'title'; // title, playing, levelComplete, gameOver, ending, transition, paused
         this.lastTime = 0;
@@ -935,11 +939,14 @@ export class Game {
         if (this.state === 'playing' || this.state === 'paused' || this.state === 'transition') {
             if (this.currentLevel) {
                 this.currentLevel.platforms.forEach(p => {
-                    this.ctx.fillStyle = '#2a2a3e';
-                    this.ctx.fillRect(p.x, p.y, p.width, p.height);
-                    this.ctx.strokeStyle = '#00ff41';
-                    this.ctx.lineWidth = 1;
-                    this.ctx.strokeRect(p.x, p.y, p.width, p.height);
+                    // Draw platform with log texture
+                    if (this.logImage.complete) {
+                        this.ctx.drawImage(this.logImage, p.x, p.y, p.width, p.height);
+                    } else {
+                        // Fallback while image is loading
+                        this.ctx.fillStyle = '#2a2a3e';
+                        this.ctx.fillRect(p.x, p.y, p.width, p.height);
+                    }
                 });
 
                 this.currentLevel.door.draw(this.ctx);
