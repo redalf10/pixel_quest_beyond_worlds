@@ -30,7 +30,8 @@ import { SoundManager } from './SoundManager.js';
 const soundManager = new SoundManager();
 
 export class Player {
-    constructor() {
+    constructor(character = 'player_1') {
+        this.character = character;
         this.x = 64;
         this.y = CANVAS_HEIGHT - 100;
         this.width = 28;
@@ -73,18 +74,33 @@ export class Player {
     }
     
     loadSprites() {
-        // Load sprite sheets from player_1 folder
+        // Load sprite sheets from the selected character folder
+        // Dynamically detect available frames for each animation
         const spriteData = [
-            { name: 'idle', frames: 3 },
-            { name: 'run', frames: 5 },
-            { name: 'attack', frames: 1 }
+            { name: 'idle', maxFrames: 5 },
+            { name: 'run', maxFrames: 5 },
+            { name: 'attack', maxFrames: 3 }
         ];
         
         spriteData.forEach(data => {
-            for (let i = 1; i <= data.frames; i++) {
+            // Try to load frames 1-maxFrames, but only add valid ones
+            for (let i = 1; i <= data.maxFrames; i++) {
                 const img = new Image();
-                img.src = `./player_1/${data.name}_${i}.png`;
-                this.sprites[data.name].push(img);
+                const src = `./${this.character}/${data.name}_${i}.png`;
+                
+                // Only add to sprites array AFTER confirming it loads successfully
+                img.onload = () => {
+                    // Image loaded successfully, add it
+                    this.sprites[data.name].push(img);
+                };
+                
+                img.onerror = () => {
+                    // Image failed to load, log warning but don't add it
+                    console.warn(`Sprite not found: ${src}`);
+                };
+                
+                // Start loading the image
+                img.src = src;
             }
         });
     }

@@ -220,7 +220,7 @@ body {
     margin-bottom: 15px;
 }
 
-#player-color-picker {
+#player-selector {
     position: relative;
     z-index: 2;
     margin-bottom: 18px;
@@ -230,45 +230,53 @@ body {
     gap: 10px;
 }
 
-#player-color-label {
+#player-selector-label {
     font-size: clamp(7px, 1.2vw, 10px);
-    color: var(--pixel-blue);
-    text-shadow: 0 0 8px rgba(0, 212, 255, 0.45);
+    color: var(--pixel-yellow);
+    text-shadow: 0 0 8px rgba(255, 179, 0, 0.45);
 }
 
-#player-color-options {
+#player-selector-options {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
 }
 
-.player-color-choice {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    min-height: 30px;
+.player-selection-btn {
     padding: 0;
-    border: 2px solid rgba(255, 255, 255, 0.45);
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.45);
+    background: transparent;
+    border: 3px solid rgba(191, 0, 255, 0.6);
     cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    height: 128px;
+    min-width: 96px;
+    min-height: 128px;
 }
 
-.player-color-choice[data-color="#00ff41"] { background: #00ff41; }
-.player-color-choice[data-color="#00d4ff"] { background: #00d4ff; }
-.player-color-choice[data-color="#ffb300"] { background: #ffb300; }
-.player-color-choice[data-color="#ff4d6d"] { background: #ff4d6d; }
-
-.player-color-choice:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+.character-sprite {
+    width: 96px;
+    height: 128px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
 
-.player-color-choice.is-selected {
-    border-color: #ffffff;
-    box-shadow:
+.player-selection-btn:hover {
+    border-color: rgba(191, 0, 255, 1);
+    box-shadow: 0 0 12px rgba(191, 0, 255, 0.6);
+    transform: scale(1.05);
+}
+
+.player-selection-btn.is-selected {
+    background: rgba(191, 0, 255, 0.2);
+    border-color: rgba(191, 0, 255, 1);
+    box-shadow: 
         0 0 0 2px rgba(0, 0, 0, 0.7),
-        0 0 14px rgba(255, 255, 255, 0.7);
+        0 0 18px rgba(191, 0, 255, 0.8);
 }
 
 #start-prompt {
@@ -338,6 +346,81 @@ body {
     color: var(--pixel-red);
     font-size: clamp(14px, 2.5vw, 24px);
     margin-bottom: 30px;
+}
+
+/* Continue Dialog */
+#continue-dialog {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 20;
+}
+
+#continue-dialog .dialog-content {
+    background: rgba(26, 26, 46, 0.95);
+    border: 3px solid var(--pixel-red);
+    border-radius: 4px;
+    padding: 40px;
+    max-width: 400px;
+    box-shadow: 
+        0 0 30px rgba(255, 0, 64, 0.6),
+        inset 0 0 20px rgba(255, 0, 64, 0.2);
+    text-align: center;
+}
+
+#continue-dialog h2 {
+    color: var(--pixel-red);
+    font-size: clamp(16px, 3vw, 24px);
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px var(--pixel-red);
+}
+
+#continue-dialog p {
+    color: var(--pixel-green);
+    font-size: 12px;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
+}
+
+.dialog-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.btn-yes,
+.btn-no {
+    padding: 12px 20px;
+    font-size: 11px;
+    min-width: 100px;
+}
+
+.btn-yes {
+    color: var(--pixel-green);
+    border-color: var(--pixel-green);
+}
+
+.btn-yes:hover {
+    background: var(--pixel-green);
+    color: var(--bg-dark);
+    box-shadow: 0 0 30px var(--text-glow);
+}
+
+.btn-no {
+    color: var(--pixel-red);
+    border-color: var(--pixel-red);
+}
+
+.btn-no:hover {
+    background: var(--pixel-red);
+    color: var(--bg-dark);
+    box-shadow: 0 0 30px rgba(255, 0, 64, 0.8);
 }
 
 /* Ending Screen */

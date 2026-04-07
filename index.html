@@ -55,16 +55,18 @@
             <p id="game-subtitle">A Retro-Style Indie Platformer with Multiverse Exploration</p>
             <p id="controls-hint" class="desktop-only">WASD: Move | W: Jump | Space: Attack | Q: Dash | R: Power Slash | F: Bomb | X: Laser | E: Interact</p>
             <p id="controls-hint-mobile" class="mobile-only">Drag joystick to move · Tap buttons to play</p>
-            <div id="player-color-picker">
-                <p id="player-color-label">Choose Player Color</p>
-                <div id="player-color-options">
-                    <button class="player-color-choice is-selected" data-color="#00ff41" type="button" aria-label="Neon green"></button>
-                    <button class="player-color-choice" data-color="#00d4ff" type="button" aria-label="Cyber blue"></button>
-                    <button class="player-color-choice" data-color="#ffb300" type="button" aria-label="Sun amber"></button>
-                    <button class="player-color-choice" data-color="#ff4d6d" type="button" aria-label="Rose red"></button>
+            <div id="player-selector">
+                <p id="player-selector-label">Choose Your Character</p>
+                <div id="player-selector-options">
+                    <button class="player-selection-btn is-selected" data-character="player_1" type="button" aria-label="Player 1">
+                        <img src="./player_1/idle_1.png" alt="Player 1" class="character-sprite">
+                    </button>
+                    <button class="player-selection-btn" data-character="player_2" type="button" aria-label="Player 2">
+                        <img src="./player_2/idle_1.png" alt="Player 2" class="character-sprite">
+                    </button>
                 </div>
             </div>
-            <p id="start-prompt">Choose color, then press Enter or tap to start</p>
+            <p id="start-prompt">Choose character, then press Enter or tap to start</p>
         </div>
 
         <!-- Level Complete Screen -->
@@ -77,6 +79,18 @@
         <div id="game-over-screen" class="hidden">
             <h2>Game Over</h2>
             <button id="restart-btn">Restart</button>
+        </div>
+
+        <!-- Game Over Continue Dialog -->
+        <div id="continue-dialog" class="hidden">
+            <div class="dialog-content">
+                <h2>Defeated!</h2>
+                <p>Do you want to continue?</p>
+                <div class="dialog-buttons">
+                    <button id="continue-yes-btn" class="btn-yes">Yes</button>
+                    <button id="continue-no-btn" class="btn-no">No</button>
+                </div>
+            </div>
         </div>
 
         <!-- Ending Screen -->

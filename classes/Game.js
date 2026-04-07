@@ -31,7 +31,7 @@ export class Game {
         this.canvas.width = CANVAS_WIDTH;
         this.canvas.height = CANVAS_HEIGHT;
 
-        this.player = new Player();
+        this.player = new Player('player_1');
         this.particles = [];
         this.bombs = [];
         this.levels = [];
@@ -55,9 +55,9 @@ export class Game {
         this.frameDeltaMs = 16.67;
 
         this.bindElements();
-        this.selectedPlayerColor = '#00ff41';
+        this.selectedCharacter = 'player_1';
         this.bindEvents();
-        this.bindPlayerColorPicker();
+        this.bindCharacterSelection();
         this.bindMobileControls();
         this.buildLevels();
         this.detectMobile();
@@ -67,6 +67,7 @@ export class Game {
         this.titleScreen = document.getElementById('title-screen');
         this.levelCompleteScreen = document.getElementById('level-complete-screen');
         this.gameOverScreen = document.getElementById('game-over-screen');
+        this.continueDialog = document.getElementById('continue-dialog');
         this.endingScreen = document.getElementById('ending-screen');
         this.pauseOverlay = document.getElementById('pause-overlay');
         this.healthBar = document.getElementById('health-bar');
@@ -76,8 +77,8 @@ export class Game {
         this.bombCooldownBar = document.getElementById('bomb-cooldown-bar');
         this.laserCooldownBar = document.getElementById('laser-cooldown-bar');
         this.roundTimerEl = document.getElementById('round-timer');
-        this.playerColorPicker = document.getElementById('player-color-picker');
-        this.playerColorChoices = Array.from(document.querySelectorAll('.player-color-choice'));
+        this.playerSelector = document.getElementById('player-selector');
+        this.playerSelectionBtns = Array.from(document.querySelectorAll('.player-selection-btn'));
     }
 
     bindEvents() {
@@ -85,18 +86,20 @@ export class Game {
         document.addEventListener('keyup', (e) => this.onKeyUp(e));
         document.getElementById('restart-btn').addEventListener('click', () => this.restart());
         document.getElementById('play-again-btn').addEventListener('click', () => this.playAgain());
+        document.getElementById('continue-yes-btn').addEventListener('click', () => this.continuePlaying());
+        document.getElementById('continue-no-btn').addEventListener('click', () => this.goBackToPlayerSelection());
         const resumeBtn = document.getElementById('resume-btn');
         if (resumeBtn) resumeBtn.addEventListener('click', () => this.resumeFromPause());
         // Tap/click to start on title screen
         this.titleScreen.addEventListener('click', (e) => {
-            if (e.target.closest('#player-color-picker')) return;
+            if (e.target.closest('#player-selector')) return;
             if (this.state === 'title' && e.target.closest('#title-screen')) {
                 soundManager.resume();
                 this.startGame();
             }
         });
         this.titleScreen.addEventListener('touchend', (e) => {
-            if (e.target.closest('#player-color-picker')) return;
+            if (e.target.closest('#player-selector')) return;
             if (this.state === 'title' && e.target.closest('#title-screen')) {
                 e.preventDefault();
                 soundManager.resume();
@@ -105,32 +108,31 @@ export class Game {
         }, { passive: false });
     }
 
-    bindPlayerColorPicker() {
-        if (!this.playerColorChoices?.length) return;
+    bindCharacterSelection() {
+        if (!this.playerSelectionBtns?.length) return;
 
-        const applySelection = (color) => {
-            if (!color) return;
-            this.selectedPlayerColor = color;
-            this.player.setColor(color);
-            for (const choice of this.playerColorChoices) {
-                choice.classList.toggle('is-selected', choice.dataset.color === color);
+        const applySelection = (character) => {
+            if (!character) return;
+            this.selectedCharacter = character;
+            for (const btn of this.playerSelectionBtns) {
+                btn.classList.toggle('is-selected', btn.dataset.character === character);
             }
         };
 
-        for (const choice of this.playerColorChoices) {
-            choice.addEventListener('click', (e) => {
+        for (const btn of this.playerSelectionBtns) {
+            btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                applySelection(choice.dataset.color);
+                applySelection(btn.dataset.character);
             });
-            choice.addEventListener('touchstart', (e) => {
+            btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                applySelection(choice.dataset.color);
+                applySelection(btn.dataset.character);
             }, { passive: false });
         }
 
-        applySelection(this.playerColorChoices[0]?.dataset.color || this.selectedPlayerColor);
+        applySelection(this.playerSelectionBtns[0]?.dataset.character || this.selectedCharacter);
     }
 
     detectMobile() {
@@ -364,7 +366,8 @@ export class Game {
     }
 
     startGame() {
-        this.player.setColor(this.selectedPlayerColor);
+        // Create new player with selected character
+        this.player = new Player(this.selectedCharacter);
         this.titleScreen.classList.add('hidden');
         this.state = 'playing';
         this.currentLevelIndex = 0;
@@ -550,8 +553,7 @@ export class Game {
         this.roundTimeRemainingMs = Math.max(0, this.roundTimeRemainingMs - this.frameDeltaMs);
         this.updateRoundTimerUI();
         if (this.roundTimeRemainingMs <= 0) {
-            this.state = 'gameOver';
-            this.gameOverScreen.classList.remove('hidden');
+            this.showContinueDialog();
             return;
         }
 
@@ -579,8 +581,7 @@ export class Game {
             if (this.player.collidesWith(enemy)) {
                 this.player.takeDamage(enemy.damage);
                 if (this.player.health <= 0) {
-                    this.state = 'gameOver';
-                    this.gameOverScreen.classList.remove('hidden');
+                    this.showContinueDialog();
                 }
             }
 
@@ -592,8 +593,7 @@ export class Game {
                     enemy.attackDealtThisRound = true;
                     this.player.takeDamage(enemy.damage);
                     if (this.player.health <= 0) {
-                        this.state = 'gameOver';
-                        this.gameOverScreen.classList.remove('hidden');
+                        this.showContinueDialog();
                     }
                 }
             }
@@ -1002,17 +1002,47 @@ export class Game {
 
     restart() {
         this.gameOverScreen.classList.add('hidden');
-        this.state = 'playing';
+        this.titleScreen.classList.remove('hidden');
+        this.state = 'title';
+        this.currentLevelIndex = 0;
         this.keyCollected = false;
         this.roundTimeRemainingMs = ROUND_TIME_MS;
         this.buildLevels();
-        this.loadLevel(this.currentLevelIndex);
+        this.particles = [];
         this.bombs = [];
-        this.gameLoop();
     }
 
     playAgain() {
         this.endingScreen.classList.add('hidden');
         this.startGame();
+    }
+
+    showContinueDialog() {
+        this.state = 'gameOver';
+        this.continueDialog.classList.remove('hidden');
+    }
+
+    continuePlaying() {
+        // Hide the dialog and continue the game
+        this.continueDialog.classList.add('hidden');
+        // Reset player health to continue playing
+        this.player.health = this.player.maxHealth;
+        this.state = 'playing';
+        // Restart the game loop
+        requestAnimationFrame((t) => this.gameLoop(t));
+    }
+
+    goBackToPlayerSelection() {
+        // Hide the dialog
+        this.continueDialog.classList.add('hidden');
+        // Go back to title screen for player selection
+        this.titleScreen.classList.remove('hidden');
+        this.state = 'title';
+        this.currentLevelIndex = 0;
+        this.keyCollected = false;
+        this.roundTimeRemainingMs = ROUND_TIME_MS;
+        this.buildLevels();
+        this.particles = [];
+        this.bombs = [];
     }
 }
